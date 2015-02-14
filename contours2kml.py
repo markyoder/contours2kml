@@ -11,11 +11,72 @@
 # polygins, etc. it might be the case that this information is contained more explicitly in the vertex objects (they're not (i don't think)
 # just lists/tuples; they are an extended list-like object that contins information about how to get to the next/previous point.
 # SO, thi seems to work pretty well most of the time, but it can make mistakes given complex polygons.
+#
+# notes and declarations:
+# this code is for use on an 'as is' basis; it is not meant for mission critical applications. the contours -> kml conversion seems to be
+# pretty reliable, but frankly most of it probably is not great code, so clean-up and contributions are very much invited.
+#
+# see test_xyz_to_kml() for a tutorial and working example.
 '''
 import numpy
 import pylab as plt
 import matplotlib as mpl
 import math
+
+#######################################
+# tests and tutorials:
+#
+def test_xyz_to_kml(fname_in='napa_etas.xyz', fname_out='napa_etas.kml', n_contours=15, fignum=0, bottom=0., top=1., alpha_kml=.8):
+	# a test script. read in some xyz, make contours, output kml.
+	#
+	# for now, assume file is in a format like: [ [x,y,z], ...]
+	ary_xyz = []
+	with open(fname_in, 'r') as f:
+		for rw in f:
+			if rw.startswith('#!'):
+				# this gives us parameters/meta data.
+				#prams = [rws.split('=') for rws in rw[2:].split()]
+				prams = {x[0]:(None if str(x[1].lower()).startswith('none') else float(x[1])) for x in [rws.split('=') for rws in rw[2:].split()]}
+				#return prams
+				#prams = {x.split('=')[0]:(float(x.split('=')[1]) if x[1]!=None else None) for
+			if rw[0]=='#': continue
+			#
+			ary_xyz += [[float(x) for x in rw.split()]]
+		#
+	#
+	# ... and in this case, the data are properly gridded, so we could take any number of shortcuts to properly shape the array 
+	# (aka, set(), max()/min(), etc. if there are issues, we'll just put it together old-school (aka, spin the list and
+	# move to a new row/col when we encounter new coordinate values.
+	#
+	# first, sort (it's probably already sorted):
+	ary_xyz.sort(key=lambda x: (x[1], x[0]))	# so sorted by y,x; reading sequentially will be rows of x and columns of y.
+	Xs, Ys, Zs = (numpy.array(col) for col in  numpy.array(zip(*ary_xyz)))
+	#
+	len_X = len(set(Xs))
+	len_Y = len(set(Ys))
+	#
+	#
+	for x in [Xs, Ys, Zs]: x.shape=(len_Y, len_X)
+	#
+	plt.figure(fignum)
+	plt.ion()
+	plt.clf()
+	contours = plt.contourf(Xs, Ys, Zs, n_contours)
+	#
+	# now, write kml. there are two main function calls that can be made. 1 fetches a kml string, the other writes the string to file.
+	# they call one another as necessary, so only one call is required.
+	# write_kml_file(kml_str=None, cset=None, fout='conts.kml', colorbarname='scale.png', markers=None, top=1.0, bottom=0.0)
+	# def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close_file=True, contour_labels=None, top=1.0, bottom=0.0, fname_out=None, markers=None)
+	#
+	kml_str = kml_from_contours(cset=contours, colorbarname='napa_colorbar.png', open_file=True, close_file=True, contour_labels=None, top=top, bottom=bottom, fname_out=fname_out, alpha_kml=alpha_kml)
+	
+	return contours
+	
+	
+####################################################################
+####################################################################
+# actual working code:
+###################################
 
 def arrayFromSet(cs=None, alpha='9d'):
 	# get an array (list) from a contourset (matplotlib.contour.ContourSet object returned by contourf() call).
@@ -863,49 +924,4 @@ def makeColorbar(z_vals=None, colorbarname=None, reffMag=5.0, fnum=None, fontcol
 
 	#
 	return [colorbarname, hname]
-#
-def test_xyz_to_kml(fname_in='napa_etas.xyz', fname_out='napa_etas.kml', n_contours=15, fignum=0, bottom=0., top=1., alpha_kml=.8):
-	# a test script. read in some xyz, make contours, output kml.
-	#
-	# for now, assume file is in a format like: [ [x,y,z], ...]
-	ary_xyz = []
-	with open(fname_in, 'r') as f:
-		for rw in f:
-			if rw.startswith('#!'):
-				# this gives us parameters/meta data.
-				#prams = [rws.split('=') for rws in rw[2:].split()]
-				prams = {x[0]:(None if str(x[1].lower()).startswith('none') else float(x[1])) for x in [rws.split('=') for rws in rw[2:].split()]}
-				#return prams
-				#prams = {x.split('=')[0]:(float(x.split('=')[1]) if x[1]!=None else None) for
-			if rw[0]=='#': continue
-			#
-			ary_xyz += [[float(x) for x in rw.split()]]
-		#
-	#
-	# ... and in this case, the data are properly gridded, so we could take any number of shortcuts to properly shape the array 
-	# (aka, set(), max()/min(), etc. if there are issues, we'll just put it together old-school (aka, spin the list and
-	# move to a new row/col when we encounter new coordinate values.
-	#
-	# first, sort (it's probably already sorted):
-	ary_xyz.sort(key=lambda x: (x[1], x[0]))	# so sorted by y,x; reading sequentially will be rows of x and columns of y.
-	Xs, Ys, Zs = (numpy.array(col) for col in  numpy.array(zip(*ary_xyz)))
-	#
-	len_X = len(set(Xs))
-	len_Y = len(set(Ys))
-	#
-	#
-	for x in [Xs, Ys, Zs]: x.shape=(len_Y, len_X)
-	#
-	plt.figure(fignum)
-	plt.ion()
-	plt.clf()
-	contours = plt.contourf(Xs, Ys, Zs, n_contours)
-	#
-	# now, write kml. there are two main function calls that can be made. 1 fetches a kml string, the other writes the string to file.
-	# they call one another as necessary, so only one call is required.
-	# write_kml_file(kml_str=None, cset=None, fout='conts.kml', colorbarname='scale.png', markers=None, top=1.0, bottom=0.0)
-	# def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close_file=True, contour_labels=None, top=1.0, bottom=0.0, fname_out=None, markers=None)
-	#
-	kml_str = kml_from_contours(cset=contours, colorbarname='napa_colorbar.png', open_file=True, close_file=True, contour_labels=None, top=top, bottom=bottom, fname_out=fname_out, alpha_kml=alpha_kml)
-	
-	return contours
+
