@@ -30,6 +30,11 @@ import math
 #
 def test_xyz_to_kml(fname_in='napa_etas.xyz', fname_out='napa_etas.kml', n_contours=15, fignum=0, bottom=0., top=1., alpha_kml=.8):
 	# a test script. read in some xyz, make contours, output kml.
+	# the front part of this script is data gathering; if you have pyplot contours and want kml, skip to the last two lines.
+	# the moral of the script is to generate kml from contours like (you'll need to fill in some variable names, etc.):
+	# kml_str = kml_from_contours(cset=contours, colorbarname='napa_colorbar.png', open_file=True, close_file=True, contour_labels=None, top=top, bottom=bottom, fname_out=fname_out, alpha_kml=alpha_kml)
+	# a standard default execution will be:
+	# kml_str = kml_from_contours(cset=contours_i_just_made, colorbarname='my_colorbar.png', open_file=True, close_file=True, contour_labels=None, top=1.0, bottom=0., fname_out='my_contours.kml', alpha_kml=.5)
 	#
 	# 1) read in the data file. we'll make contours from these data.
 	# for now, assume file is in a format like: [ [x,y,z], ...]
