@@ -17,6 +17,8 @@
 # pretty reliable, but frankly most of it probably is not great code, so clean-up and contributions are very much invited.
 #
 # see test_xyz_to_kml() for a tutorial and working example.
+# the basic meant and potatoes is a call like:
+# kml_from_contours(cset=contours, colorbarname='napa_colorbar.png', open_file=True, close_file=True, contour_labels=None, top=top, bottom=bottom, fname_out=fname_out, alpha_kml=alpha_kml)
 '''
 import numpy
 import pylab as plt
@@ -29,6 +31,7 @@ import math
 def test_xyz_to_kml(fname_in='napa_etas.xyz', fname_out='napa_etas.kml', n_contours=15, fignum=0, bottom=0., top=1., alpha_kml=.8):
 	# a test script. read in some xyz, make contours, output kml.
 	#
+	# 1) read in the data file. we'll make contours from these data.
 	# for now, assume file is in a format like: [ [x,y,z], ...]
 	ary_xyz = []
 	with open(fname_in, 'r') as f:
@@ -52,11 +55,14 @@ def test_xyz_to_kml(fname_in='napa_etas.xyz', fname_out='napa_etas.kml', n_conto
 	ary_xyz.sort(key=lambda x: (x[1], x[0]))	# so sorted by y,x; reading sequentially will be rows of x and columns of y.
 	Xs, Ys, Zs = (numpy.array(col) for col in  numpy.array(zip(*ary_xyz)))
 	#
+	# side lengths (number of unique entries in Xs, Ys).
 	len_X = len(set(Xs))
 	len_Y = len(set(Ys))
 	#
 	#
 	for x in [Xs, Ys, Zs]: x.shape=(len_Y, len_X)
+	#
+	# ok, preparation part finished. this is where most people will start; get some contours using pyplot.contour() or .contourf() and convert to kml.
 	#
 	plt.figure(fignum)
 	plt.ion()
