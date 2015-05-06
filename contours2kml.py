@@ -74,6 +74,14 @@ def test_xyz_to_kml(fname_in='napa_etas.xyz', fname_out='napa_etas.kml', n_conto
 	# write_kml_file(kml_str=None, cset=None, fout='conts.kml', colorbarname='scale.png', markers=None, top=1.0, bottom=0.0)
 	# def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close_file=True, contour_labels=None, top=1.0, bottom=0.0, fname_out=None, markers=None)
 	#
+	# some comments on parameters:
+	# open_file, close_file : open/close the KML file. if we're appending to a file in progress, set "open" to False, and the script won't write the open-header.
+	#   if we're going to write more stuff (aka, add some place markers), set "close" to False. the default is to create a self-contained kml file, 
+	#   so open_file=True, close_file=True
+	# top, bottom: top/bottom contours to keep. use fractions, like .9, .1 to keep the 10th to 90th percent contours. i think you can also give integers if you know
+	#  the contour count, and the script will recognize integers vs floats (if not, it's an easy community contribution).
+	# to just return a string, set fname_out=None, otherwise specify a filename for the kml output. 
+	# alpha_kml: an alpha setting for the kml output (aka, fill color density).
 	kml_str = kml_from_contours(cset=contours, colorbarname='napa_colorbar.png', open_file=True, close_file=True, contour_labels=None, top=top, bottom=bottom, fname_out=fname_out, alpha_kml=alpha_kml)
 	
 	return contours
@@ -638,7 +646,7 @@ def write_kml_file(kml_str=None, cset=None, fout='conts.kml', colorbarname='scal
 	#
 	return None
 
-def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close_file=True, contour_labels=None, top=1.0, bottom=0.0, fname_out=None, markers=None, alpha_kml=.8):
+def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close_file=True, contour_labels=None, top=1.0, bottom=0.0, fname_out=None, fname_out_mode='w', markers=None, alpha_kml=.8):
 	# get a KML string from a contourset (matplotlib.contour.ContourSet object returned by contourf() call).
 	# (will it be necessary to write directly to file? is there a string length limit problem?)
 	# open_file: does this string "open the file", aka, open the kml file (i think that's what this means). if True, we get
@@ -783,7 +791,7 @@ def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close
 	#
 	if fname_out!=None:
 		#z=write_kml_file(kml_str=kmlstr, cset=cset, fout=fname_out, colorbarname=colorbarname, markers=markers, top=top, bottom=bottom)
-		with open(fname_out, 'w') as f:
+		with open(fname_out, fname_out_mode) as f:
 			f.write(kmlstr)
 	#
 	return kmlstr
