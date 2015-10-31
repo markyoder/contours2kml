@@ -58,7 +58,7 @@ def test_xyz_to_kml(fname_in='napa_etas.xyz', fname_out='napa_etas.kml', n_conto
 	#
 	# first, sort (it's probably already sorted):
 	ary_xyz.sort(key=lambda x: (x[1], x[0]))	# so sorted by y,x; reading sequentially will be rows of x and columns of y.
-	Xs, Ys, Zs = (numpy.array(col) for col in  numpy.array(zip(*ary_xyz)))
+	Xs, Ys, Zs = (numpy.array(col) for col in  numpy.array(list(zip(*ary_xyz))))
 	#
 	# side lengths (number of unique entries in Xs, Ys).
 	len_X = len(set(Xs))
@@ -113,7 +113,7 @@ def arrayFromSet(cs=None, alpha='9d'):
 	dz= layers[0] - levels[0]
 	collects=cs.collections
 	carray = []
-	for i in xrange(0, len(collects)):
+	for i in range(0, len(collects)):
 		bgra_array = 255*collects[i].get_facecolor()[0]
 		#strclr = '7d%02x%02x%02x' % ( bgra_array[2] , bgra_array[1] , bgra_array[0] )
 		strclr = '%s%02x%02x%02x' % (alpha, bgra_array[2] , bgra_array[1] , bgra_array[0] )
@@ -173,8 +173,8 @@ def fixed_conts_to_str(cset=None, top=1.0, bottom=0.0):
 	for x in levels: outstr+='%f\t' % x
 	outstr=outstr[:-1]+'\n'
 	#
-	#for i in xrange(len(cs)):
-	for i in xrange(bottom, top):
+	#for i in range(len(cs)):
+	for i in range(bottom, top):
 		#
 		outstr+='#!contour\t%d\n' % i
 		#itrace=0
@@ -187,11 +187,11 @@ def fixed_conts_to_str(cset=None, top=1.0, bottom=0.0):
 				#tmpLL=[]		# KML is not always rendering properly. maybe incomplete polygons?
 				outstr+='#!trace\t%d,%d\n' % (itraces, itrace)
 				#
-				for i_ll in xrange(len(trace[0])):
+				for i_ll in range(len(trace[0])):
 				#for lng,lat in trace.vertices:
 					lng = trace[0][i_ll]
 					lat = trace[1][i_ll]
-				#for lng, lat in zip(*trace):
+				#for lng, lat in list(zip(*trace)):
 					#kmlstr+='%s,%s,0\n' % (round(lng,7),round(lat,7))
 					outstr+='%f\t%f,0\n' % (lng, lat)    # and z=0
 					#tmpLL+=[[lng, lat]]
@@ -235,9 +235,9 @@ def conts_to_str(cset=None, top=1.0, bottom=0.0):
 	for x in levels: outstr+='%f\t' % x
 	outstr=outstr[:-1]+'\n'
 	#
-	#for i in xrange(len(cs)):
+	#for i in range(len(cs)):
 	
-	for i in xrange(bottom, top):
+	for i in range(bottom, top):
 		outstr+='#contour\t%d\n' % i
 		itrace=0
 		for itrace, trace in enumerate(cs[i].get_paths()):
@@ -245,7 +245,7 @@ def conts_to_str(cset=None, top=1.0, bottom=0.0):
 			#tmpLL=[]		# KML is not always rendering properly. maybe incomplete polygons?
 			outstr+='#trace\t%d\n' % itrace
 			for lng,lat in trace.vertices:
-			#for lng, lat in zip(*trace):
+			#for lng, lat in list(zip(*trace)):
 				#kmlstr+='%s,%s,0\n' % (round(lng,7),round(lat,7))
 				outstr+='%f\t%f,0\n' % (lng, lat)    # and z=0
 				#tmpLL+=[[lng, lat]]
@@ -269,7 +269,7 @@ def innerouterpolys(polylist):
 	#outerpolys=[]			# these will be lists. each entry is like: [[outer],[true-inner],[true-inner],..]
 	#
 	#for ply in polylist:
-	for i in xrange(len(polylist)):
+	for i in range(len(polylist)):
 		polylistplus += [[i, [], polylist[i]]]
 		#
 		# shorthand:
@@ -282,7 +282,7 @@ def innerouterpolys(polylist):
 		#
 		# for each polygon in this level:
 		# is the ith ("top") polygon inside the j'th poly?
-		for j in xrange(len(polylist)):
+		for j in range(len(polylist)):
 			if j==i: continue 
 			X,Y = polylist[j][0][:], polylist[j][1][:]
 			#if x0>=max(X) or x0<=min(X) or y0>max(Y) or y0<min(Y): 
@@ -298,7 +298,7 @@ def innerouterpolys(polylist):
 			# how many poly boundaries do we cross if we draw a line out of the poly in one direction.
 			# equivalently (and in computer language), how many segments at y1 < y <y2 (or upside down)
 		# are to the right of the point (or to the left, or up/down -- pick one).
-			for k in xrange(1,N):
+			for k in range(1,N):
 				k1 = k-1
 				#k2 = (k+1)%N	# note the k%N: the poly does not have to be closed
 				k2 = k	# but it should be, or you can count a crossing twice and get a bogus answer.
@@ -306,9 +306,9 @@ def innerouterpolys(polylist):
 				x2, y2 = X[k2], Y[k2]
 				'''
 				x1,y1 = polylist[j][0][k1], polylist[j][1][k1]
-				print "j,len(polylist):", j, len(polylist)
-				print "k2, len(polylist[j][0])", k2, len(polylist[j][0])
-				print "k2, len(polylist[j][1])", k2, len(polylist[j][1])
+				print("j,len(polylist):", j, len(polylist))
+				print("k2, len(polylist[j][0])", k2, len(polylist[j][0]))
+				print("k2, len(polylist[j][1])", k2, len(polylist[j][1]))
 				x2,y2 = polylist[j][0][k2], polylist[j][1][k2]
 				'''
 				#if y0>=min(y1, y2) and y0<=max(y1, y2) and x0<max(x1, x2):
@@ -375,7 +375,7 @@ def conts_to_plot_lists(cset=None):
 	#levels=[]
 	#contlevel=0
 	#
-	for i in xrange(len(cs)):
+	for i in range(len(cs)):
 		# level-level:
 		outlist+=[[]]
 		#contcount=0
@@ -413,7 +413,7 @@ def conts_to_plot_lists(cset=None):
 					# this poly is truly closed IF this end coordinate does not appear again in the sequence.
 					# there is probably a smart, compiled way to do this, but for now let's just loop it:
 					ispinched=True
-					for i in xrange(llindex+1, len(trace.vertices)):
+					for i in range(llindex+1, len(trace.vertices)):
 						if trace.vertices[i][0]==lng and trace.vertices[i][1]==lat:
 							# we've found our "end" point at least one mor time, so keep building the poly.
 							# obviously, there is a faster way to do this, but let's just see if it works first.
@@ -473,7 +473,7 @@ def conts_to_plot_lists_raw(cset=None):
 	#levels=[]
 	#contlevel=0
 	#
-	for i in xrange(len(cs)):
+	for i in range(len(cs)):
 		# level-level:
 		outlist+=[[]]
 		#contcount=0
@@ -509,7 +509,7 @@ def contsToPlotListsOuter(cset=None):
 					# outlist -> [ [level0: [[cont0x], [cont0y]], [[cont1x], [cont1y]] ], [level1: ] ???
 	contlevel=0
 	#
-	for i in xrange(len(cs)):
+	for i in range(len(cs)):
 		# level-level:
 		outlist+=[[]]
 		contcount=0
@@ -577,7 +577,7 @@ def plotPolyList(polys=None, markerstr='.-', fignum=0, pllevels=None):
 			
 			 
 		lvlclr=plotcolor(ilevel, nlevels*2)
-		print ilevel, lvlclr
+		print(ilevel, lvlclr)
 		for xy in level:
 			for ring in xy:
 			#fixedpolys = checkPoly(inpoly=xy, fignum=None)
@@ -612,7 +612,7 @@ def plotPolyListOuter(polys=None, markerstr='.-', fignum=0, pllevels=None):
 			
 			 
 		lvlclr=plotcolor(ilevel, nlevels*2)
-		print ilevel, lvlclr
+		print(ilevel, lvlclr)
 		for xy in level:
 			#fixedpolys = checkPoly(inpoly=xy, fignum=None)
 			#for fxy in fixedpolys:
@@ -688,7 +688,7 @@ def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close
 	kml_top      = int(math.ceil(top*float(n_levels)))
 	kml_bottom   = int(math.floor(bottom*float(n_levels)))	# (and just in case we accidentally calc <0 or >len)
 	#
-	print "kml bottom, top: ", kml_bottom, kml_top
+	print("kml bottom, top: ", kml_bottom, kml_top)
 	#
 	#resolution = 5
 	#LevelsNumber = 5 * resolution
@@ -705,8 +705,8 @@ def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close
 		kmlstr='<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n'
 	#
 	# styles come from the contours collection (cs):
-	#for i in xrange(0,len(cs)):
-	for i in xrange(kml_bottom, kml_top):
+	#for i in range(0,len(cs)):
+	for i in range(kml_bottom, kml_top):
 		bgra_array = 255*cs[i].get_facecolor()[0]
 		kmlstr+='<Style id="l%d">\n' % i
 		kmlstr+='<LineStyle><color>00000000</color></LineStyle>\n'
@@ -730,9 +730,9 @@ def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close
 	#	   len(cs[i]) != len(polys[i]) (in fact, len(polys[i]>=len(cs[i]) ), which is to say
 	#	   polys may have more distinct polygons per contour level. of course, the individual polys
 	#	   will have differend length as well.
-	#for i in xrange(startindex, len(cs)):
-	#for i in xrange(startindex, len(polys)):
-	for i in xrange(kml_bottom, kml_top):
+	#for i in range(startindex, len(cs)):
+	#for i in range(startindex, len(polys)):
+	for i in range(kml_bottom, kml_top):
 		# each i is a contour level.
 		kmlstr+='<Placemark>\n'
 		#
@@ -742,7 +742,7 @@ def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close
 		kmlstr+='<styleUrl>#l%d</styleUrl>\n' % i
 		kmlstr+='<MultiGeometry>\n'
 		 
-		for ii in xrange(len(polys[i])):
+		for ii in range(len(polys[i])):
 			# each ii is a polygon (set).
 			kmlstr+='<Polygon>\n'
 			kmlstr+='<extrude>0</extrude>\n'
@@ -753,7 +753,7 @@ def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close
 			
 			#tmpLL=[]		# KML is not always rendering properly. maybe incomplete polygons?
 			#for lng,lat in trace.vertices:
-			for ill in xrange(len(polys[i][ii][0][0])):
+			for ill in range(len(polys[i][ii][0][0])):
 				# first set is the outerBoundary
 				# noting that each polygon is stored as [[x], [y]], so len(polys[i][ii])=2 always.
 				# len(polys[i][ii][0])=len(polys[i][ii][1]) is the length or size (num. verts.) of the polygon.
@@ -770,13 +770,13 @@ def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close
 			kmlstr+='</coordinates>\n</LinearRing>\n</outerBoundaryIs>\n'
 			#
 			# inner polys?
-			for iInner in xrange(1,len(polys[i][ii])):
+			for iInner in range(1,len(polys[i][ii])):
 				thispoly=polys[i][ii][iInner]
 				# if any, these will be inner polys, each like [[x], [y]]
 				kmlstr+='<innerBoundaryIs>\n<LinearRing>\n<coordinates>\n'
 				# coords like 'lon,lat,alt\n'
 				# -77.05668055019126,38.87154239798456,100
-				for ill in xrange(len(thispoly[0])):
+				for ill in range(len(thispoly[0])):
 					kmlstr+='%f,%f,0\n' % (thispoly[0][ill], thispoly[1][ill])
 				kmlstr+='</coordinates>\n</LinearRing>\n</innerBoundaryIs>\n'
 			#
@@ -815,7 +815,7 @@ def kml_from_contours_raw(cset=None, colorbarname='scale.png', contour_labels=['
 	#
 	kmlstr='<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n'
 	#
-	for i in xrange(0,len(cset_collections)):
+	for i in range(0,len(cset_collections)):
 		bgra_array = 255*cset_collections[i].get_facecolor()[0]
 		kmlstr+='<Style id="l%d">\n' % i
 		kmlstr+='<LineStyle><color>00000000</color></LineStyle>\n'
@@ -833,7 +833,7 @@ def kml_from_contours_raw(cset=None, colorbarname='scale.png', contour_labels=['
 	kmlstr+='</ScreenOverlay>\n'
 	#
 	fixedpolys=0
-	for i in xrange(startindex, len(cset_collections)):
+	for i in range(startindex, len(cset_collections)):
 		kmlstr+='<Placemark>\n'
 		kmlstr+='<name>%s</name>\n' % contour_labels[i/int(labels_len)]
 		kmlstr+='<styleUrl>#l%d</styleUrl>\n' % i
@@ -907,14 +907,13 @@ def makeColorbar(z_vals=None, colorbarname=None, reffMag=5.0, fnum=None, fontcol
 	ticdiff0=self.Z2d.max()-self.Z2d.min()
 	ticdiff=ticdiff0/4.0
 	#
-	print "max set: ", self.Z2d.max(), timefactExp, ratefactorExp
+	print("max set: ", self.Z2d.max(), timefactExp, ratefactorExp)
 	#tics = [self.Z2d.min(), self.Z2d.max()]
 	tics = [self.Z2d.min()]
 	tcklbls=['%.2f'% (self.Z2d.min() + timefactExp + ratefactorExp)]
 	while tics[-1]<=self.Z2d.max():
 		tics+=[tics[-1]+ticdiff]
 		tcklbls+=['%.2f'% (tics[-1]+ timefactExp + ratefactorExp)]
-	#print t1, t2
 	#
 	#cb1 = mpl.colorbar.ColorbarBase(axe, norm=norm, ticks=tics, format="%g%%", orientation='vertical')
 	cb1 = mpl.colorbar.ColorbarBase(axe, norm=norm, ticks=tics, format="%.2f", orientation='vertical', cmap=color_map)
