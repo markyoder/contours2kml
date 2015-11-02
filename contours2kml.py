@@ -663,6 +663,7 @@ def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close
 	# top 50% of contours to kml.
 	# fname_out: filename for output (will call write_kml_file) note this addition depricates write_kml_file()
 	#
+	colorbarname = (colorbarname or 'scale.png')
 	cs=cset.collections
 	#
 	polys = conts_to_plot_lists(cset=cset)		# this function fixes multi-closed polys. use for actual kml contours.
