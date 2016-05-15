@@ -675,10 +675,12 @@ def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close
 	if top==None: top=1.0
 	if bottom==None: bottom=0.0
 	# convert alpha_kml (if it's a float) to hex:
-	if isinstance(alpha_kml, float):
-		# there's probably a better way to do this, but this seems to work ok:
-		# hex(integer) returns something like '0xaa', like hex(128) --> '0x80', where the bit to the right of 'x' is the hex value.
-		alpha_kml = hex(int(255*alpha_kml)).split('x')[1]
+	
+	#if isinstance(alpha_kml, float):
+	#	# there's probably a better way to do this, but this seems to work ok:
+	#	# hex(integer) returns something like '0xaa', like hex(128) --> '0x80', where the bit to the right of 'x' is the hex value.
+	#	alpha_kml = hex(int(255*alpha_kml)).split('x')[1]
+	alpha_kml = hex_if_float(alpha_kml)
 	#
 	# if top, bottom are >1, assume they're the number/index of the contour range being selected.
 	# otherwise, it's a percentage.
@@ -711,7 +713,10 @@ def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close
 		bgra_array = 255*cs[i].get_facecolor()[0]
 		kmlstr+='<Style id="l%d">\n' % i
 		kmlstr+='<LineStyle><color>00000000</color></LineStyle>\n'
-		kmlstr+='<PolyStyle><color>%s%02x%02x%02x</color></PolyStyle>\n' % (alpha_kml, bgra_array[2] , bgra_array[1] , bgra_array[0] )
+		#		#
+		kmlstr+='<PolyStyle><color>%s%02s%02s%02s</color></PolyStyle>\n' % tuple([hex_if_float(x) for x in (alpha_kml, hex_if_float(bgra_array[2]) , hex_if_float(bgra_array[1]) ,hex_if_float(bgra_array[0]) )])
+		#kmlstr+='<PolyStyle><color>%s%02x%02x%02x</color></PolyStyle>\n' % tuple([hex_if_float(x) for x in (alpha_kml, hex_if_float(bgra_array[2]) , hex_if_float(bgra_array[1]) ,hex_if_float(bgra_array[0]) )])
+		
 		#kmlstr+='<PolyStyle><color>ff%02x%02x%02x</color></PolyStyle>\n' % ( bgra_array[2] , bgra_array[1] , bgra_array[0] )
 		kmlstr+='</Style>\n'
 	#
@@ -943,4 +948,9 @@ def makeColorbar(z_vals=None, colorbarname=None, reffMag=5.0, fnum=None, fontcol
 
 	#
 	return [colorbarname, hname]
+
+def hex_if_float(X):
+	if isinstance(X, float) or isinstance(X,int):
+		X = hex(int((255 if X<1 else 1)*X)).split('x')[1]
+	return X
 
