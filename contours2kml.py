@@ -950,7 +950,9 @@ def makeColorbar(z_vals=None, colorbarname=None, reffMag=5.0, fnum=None, fontcol
 	return [colorbarname, hname]
 
 def hex_if_float(X):
+	# this is still probably not the most stable solution to this problem, but it looks like it will patch it together for now.
 	if isinstance(X, float) or isinstance(X,int):
-		X = hex(int((255 if X<1 else 1)*X)).split('x')[1]
+		#X = hex(int((255 if X<1 else 1)*X)).split('x')[1]
+		X = ('00%s' % hex(int((255 if X<1 else 1)*X)).split('x')[1])[-2:]
 	return X
 
