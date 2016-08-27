@@ -24,6 +24,7 @@ import numpy
 import pylab as plt
 import matplotlib as mpl
 import math
+import os
 
 #######################################
 # tests and tutorials:
@@ -91,6 +92,77 @@ def test_xyz_to_kml(fname_in='napa_etas.xyz', fname_out='napa_etas.kml', n_conto
 	
 	return contours
 	
+def xyz_file_to_kml(fname_in='napa_etas.xyz', fname_out='napa_etas.kml', n_contours=15, fignum=0, bottom=0., top=1., alpha_kml=.8):
+	# read in some xyz, make contours, output kml.
+	# the front part of this script is data gathering; if you have pyplot contours and want kml, skip to the last two lines.
+	# the moral of the script is to generate kml from contours like (you'll need to fill in some variable names, etc.):
+	# kml_str = kml_from_contours(cset=contours, colorbarname='napa_colorbar.png', open_file=True, close_file=True, contour_labels=None, top=top, bottom=bottom, fname_out=fname_out, alpha_kml=alpha_kml)
+	# a standard default execution will be:
+	# kml_str = kml_from_contours(cset=contours_i_just_made, colorbarname='my_colorbar.png', open_file=True, close_file=True, contour_labels=None, top=1.0, bottom=0., fname_out='my_contours.kml', alpha_kml=.5)
+	#
+	# 1) read in the data file. we'll make contours from these data.
+	# for now, assume file is in a format like: [ [x,y,z], ...]
+	ary_xyz = []
+	with open(fname_in, 'r') as f:
+		for rw in f:
+			if rw.startswith('#!'):
+				# this gives us parameters/meta data.
+				# but i don't think we do anything with them, so just "try" to fetch them:
+				try:
+					#prams = [rws.split('=') for rws in rw[2:].split()]
+					prams = {x[0]:(None if str(x[1].lower()).startswith('none') else float(x[1])) for x in [rws.split('=') for rws in rw[2:].split()]}
+				except:
+					prams={}
+
+				#prams = {x.split('=')[0]:(float(x.split('=')[1]) if x[1]!=None else None) for
+			if rw[0]=='#': continue
+			#
+			ary_xyz += [[float(x) for x in rw.split()]]
+		#
+	#
+	# ... and in this case, the data are properly gridded, so we could take any number of shortcuts to properly shape the array 
+	# (aka, set(), max()/min(), etc. if there are issues, we'll just put it together old-school (aka, spin the list and
+	# move to a new row/col when we encounter new coordinate values.
+	#
+	# first, sort (it's probably already sorted):
+	ary_xyz.sort(key=lambda x: (x[1], x[0]))	# so sorted by y,x; reading sequentially will be rows of x and columns of y.
+	Xs, Ys, Zs = (numpy.array(col) for col in  numpy.array(list(zip(*ary_xyz))))
+	#
+	# side lengths (number of unique entries in Xs, Ys).
+	len_X = len(set(Xs))
+	len_Y = len(set(Ys))
+	#
+	#
+	for x in [Xs, Ys, Zs]: x.shape=(len_Y, len_X)
+	#
+	# ok, preparation part finished. this is where most people will start; get some contours using pyplot.contour() or .contourf() and convert to kml.
+	#
+	plt.figure(fignum)
+	plt.ion()
+	plt.clf()
+	contours = plt.contourf(Xs, Ys, Zs, n_contours)
+	#
+	# now, write kml. there are two main function calls that can be made. 1 fetches a kml string, the other writes the string to file.
+	# they call one another as necessary, so only one call is required.
+	# write_kml_file(kml_str=None, cset=None, fout='conts.kml', colorbarname='scale.png', markers=None, top=1.0, bottom=0.0)
+	# def kml_from_contours(cset=None, colorbarname='scale.png', open_file=True, close_file=True, contour_labels=None, top=1.0, bottom=0.0, fname_out=None, markers=None)
+	#
+	# some comments on parameters:
+	# open_file, close_file : open/close the KML file. if we're appending to a file in progress, set "open" to False, and the script won't write the open-header.
+	#   if we're going to write more stuff (aka, add some place markers), set "close" to False. the default is to create a self-contained kml file, 
+	#   so open_file=True, close_file=True
+	# top, bottom: top/bottom contours to keep. use fractions, like .9, .1 to keep the 10th to 90th percent contours. i think you can also give integers if you know
+	#  the contour count, and the script will recognize integers vs floats (if not, it's an easy community contribution).
+	# to just return a string, set fname_out=None, otherwise specify a filename for the kml output. 
+	# alpha_kml: an alpha setting for the kml output (aka, fill color density).
+	#
+	# get a name for the colorbar:
+	f_path, f_name = os.path.split(fname_out)
+	f_name_base, f_name_ext = os.path.splitext(f_name)
+	f_name_colorbar = os.path.join(f_path, '{}_cbar.png'.format(f_name_base))
+	kml_str = kml_from_contours(cset=contours, colorbarname='napa_colorbar.png', open_file=True, close_file=True, contour_labels=None, top=top, bottom=bottom, fname_out=fname_out, alpha_kml=alpha_kml)
+	
+	return contours
 	
 ####################################################################
 ####################################################################

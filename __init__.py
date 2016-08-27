@@ -2,6 +2,8 @@ import glob
 import os
 import imp
 
+from contours2kml import *
+
 excluded_py_files=['__init__.py']
 local_path = os.path.split(__file__)[0]
 
