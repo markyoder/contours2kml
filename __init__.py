@@ -1,6 +1,7 @@
 import glob
 import os
 import imp
+import sys
 
 from contours2kml import *
 
